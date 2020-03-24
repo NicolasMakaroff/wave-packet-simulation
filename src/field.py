@@ -24,7 +24,22 @@ class Field:
                 self._potential_ = np.ascontiguousarray(np.zeros([self._size_,self._size_]),dtype=np.complex) # C matrix like 
                 self._initial_state_ = np.ascontiguousarray(np.zeros([self._size_,self._size_]),dtype=np.complex) 
 
-        def _setPotential_(self,array):
+        def _setPotential_(self,_potential_array):
                 if array.shape == (self._size_,self._size_):
-                        
+                        self._potential_ = np.ascontiguousarray(_potential_array)
+                        return True
+                else:
+                        raise ValueError(
+                '{} array object must be 2D array of the size _size_. Given size: {} '.format(self.__class__.__name__,array.shape))
+        
+        def _setInitialState_(self,_initial_state_array):
+                if array.shape == (self._size_,self._size_):
+                        self._potential_ = np.ascontiguousarray(_initial_state_array)
+                        return True
+                else:
+                        raise ValueError(
+                '{} array object must be 2D array of the size _size_. Given size: {} '.format(self.__class__.__name__,array.shape))
+
+        
+
 
