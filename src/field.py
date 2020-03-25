@@ -42,10 +42,11 @@ class Field:
 
         def _calc_initial_state(self,func):
                 """
-                Apply the function `func` to compute the initial state.
+                Apply the function `func` to compute the initial state. 
+                Could be improved if `func`is a numpy function or act as a numpy function. 
 
                 Args: 
-                 func: A function with two args.
+                 func: A function with two args. 
                 """
                 for i in range(self._size_):
                         new_i_ = self._start_x_ + self._spatial_step_ * i
@@ -77,7 +78,7 @@ class Field:
                         raise ValueError(
                 '{} array object must be 2D array of the size _size_. Given size: {} '.format(self.__class__.__name__,img.shape))
         
-        
+
         
 
         
