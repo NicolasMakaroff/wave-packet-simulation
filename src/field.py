@@ -1,6 +1,10 @@
 import numpy as np
 from matplotlib.image import imread
 
+###########
+# Try PyTruth
+###########
+
 class Field:
         """
         Define a class for a field generator.
