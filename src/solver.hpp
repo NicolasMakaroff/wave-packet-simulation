@@ -75,9 +75,11 @@ namespace solver{
 
                 public:
                 Solver();
-
+                Solver(arma::cx_mat input, double dx, double dy, double dt, arma::cx_mat in_pot);
+                
 
         };
+unsigned int Factorial( unsigned int number );
 
 }
 
