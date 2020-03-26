@@ -66,17 +66,17 @@ namespace solver{
         
         class Solver{
                 private:
-                arma::cx_mat container;
-                arma::cx_mat potentials;
-                arma::cx_mat shift_operator;
-		double dx;
-                double dy;
-                double dt;
+                arma::cx_mat _psi_;
+                arma::cx_mat _potentials_;
+                arma::cx_mat _constants_;
+		double _dx_;
+                double _dy_;
+                double _dt_;
 
                 public:
                 Solver();
-                Solver(arma::cx_mat input, double dx, double dy, double dt, arma::cx_mat in_pot);
-                
+                Solver(arma::cx_mat init_psi, double dx, double dy, double dt, arma::cx_mat init_potential);
+                void FTCS(void);
 
         };
 unsigned int Factorial( unsigned int number );
