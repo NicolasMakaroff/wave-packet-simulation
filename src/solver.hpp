@@ -72,16 +72,18 @@ namespace solver{
 		double _dx_;
                 double _dy_;
                 double _dt_;
+                double _precision_;
 
                 public:
                 Solver();
-                Solver(arma::cx_mat init_psi, double dx, double dy, double dt, arma::cx_mat init_potential);
+                Solver(arma::cx_mat init_psi, arma::cx_mat init_potential, double dx, double dy, double dt, double precision);
                 void FTCS(void);
                 void BTCS(void);
                 void CTCS(void);
 
         };
 unsigned int Factorial( unsigned int number );
+double MatrixNorm(arma::cx_mat A, arma::cx_mat B);
 
 }
 

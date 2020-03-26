@@ -15,8 +15,8 @@
 #define cxi_ arma::cx_double(0.0, 1.0)
 
 
-solver::Solver::Solver(arma::cx_mat input, double dx, double dy, double dt, arma::cx_mat in_pot)
-:_dx_(dx),_dy_(dy), _dt_(dt){
+solver::Solver::Solver(arma::cx_mat input,  arma::cx_mat in_pot, double dx, double dy, double dt, double precision)
+:_dx_(dx),_dy_(dy), _dt_(dt),_precision_(precision){
         int n_rows_ = input.n_rows;
         int n_cols_ = input.n_cols;
         _psi_ = arma::cx_mat(n_rows_ + 2, n_cols_ + 2, arma::fill::zeros);
@@ -46,6 +46,30 @@ void solver::Solver::FTCS(){
 
 void solver::Solver::BTCS(){
 
+        arma::cx_mat _implicite_psi_ = _psi_;
+        arma::cx_mat _new_psi_ = _psi_;
+        double epsilon_ = arma::datum::inf ;
+
+        while (epsilon_ > _precision_){
+
+                _implicite_psi_ = _new_psi_;
+
+                arma::cx_mat _first_term_ = -1.0 * (hbar_*hbar_/(2*mass_*_dx_*_dx_))*_constants_*_psi_;
+                arma::cx_mat _second_term_ = -1.0 * (hbar_*hbar_/(2*mass_*_dy_*_dy_))*_psi_*_constants_;
+                arma::cx_mat _third_term_ = cxi_ * hbar_ / _dt_ * _psi_;
+
+                arma::cx_mat _left_term_ = cxi_*hbar_ - _potentials_ - hbar_*hbar_/(mass_*_dx_*_dx_) - hbar_*hbar_/(mass_*_dy_*_dy_);
+
+                _new_psi_ = (_first_term_ + _second_term_ + _third_term_)/_left_term_;
+                
+                epsilon_ = solver::MatrixNorm(_implicite_psi_,_new_psi_);
+        }
+        _psi_ = _implicite_psi_;
+
+}
+
+void solver::Solver::CTCS(){
+
         arma::cx_mat _first_term_ = -1.0 * (hbar_*hbar_/(2*mass_*_dx_*_dx_))*_constants_*_psi_;
         arma::cx_mat _second_term_ = -1.0 * (hbar_*hbar_/(2*mass_*_dy_*_dy_))*_psi_*_constants_;
         arma::cx_mat _third_term_ = cxi_ * hbar_ / _dt_ * _psi_;
@@ -57,13 +81,12 @@ void solver::Solver::BTCS(){
         _psi_.submat(1,1,size_,size_) = _right_term_.submat(1,1,size_,size_);
 }
 
-void solver::Solver::CTCS(){
-        
-
-}
 
 unsigned int solver::Factorial(unsigned int n){
         return n <= 1 ? n : Factorial(n-1)*n;
 }
 
-
+double solver::MatrixNorm(arma::cx_mat A, arma::cx_mat B){
+        double C = arma::norm(A - B,2);
+        return C;
+}
