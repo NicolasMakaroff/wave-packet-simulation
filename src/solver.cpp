@@ -32,7 +32,7 @@ solver::Solver::Solver(arma::cx_mat input,  arma::cx_mat in_pot, double dx, doub
 	}
 }
 
-void solver::Solver::FTCS(){
+void solver::Solver::FTCS(void){
 
         arma::cx_double cte_ = cxi_*hbar_*_dt_;
         arma::cx_mat _first_term_ = cte_*(1/(2*mass_*_dx_*_dx_))*_constants_*_psi_;
@@ -44,7 +44,7 @@ void solver::Solver::FTCS(){
         _psi_.submat(1,1,size_,size_) = _right_term_.submat(1,1,size_,size_);
 }
 
-void solver::Solver::BTCS(){
+void solver::Solver::BTCS(void){
 
         arma::cx_mat _implicite_psi_ = _psi_;
         arma::cx_mat _new_psi_ = _psi_;
@@ -54,31 +54,42 @@ void solver::Solver::BTCS(){
 
                 _implicite_psi_ = _new_psi_;
 
-                arma::cx_mat _first_term_ = -1.0 * (hbar_*hbar_/(2*mass_*_dx_*_dx_))*_constants_*_psi_;
-                arma::cx_mat _second_term_ = -1.0 * (hbar_*hbar_/(2*mass_*_dy_*_dy_))*_psi_*_constants_;
+                arma::cx_mat _first_term_ = -1.0 * (hbar_*hbar_/(2*mass_*_dx_*_dx_))*_constants_*_implicite_psi_;
+                arma::cx_mat _second_term_ = -1.0 * (hbar_*hbar_/(2*mass_*_dy_*_dy_))*_implicite_psi_*_constants_;
                 arma::cx_mat _third_term_ = cxi_ * hbar_ / _dt_ * _psi_;
 
-                arma::cx_mat _left_term_ = cxi_*hbar_ - _potentials_ - hbar_*hbar_/(mass_*_dx_*_dx_) - hbar_*hbar_/(mass_*_dy_*_dy_);
+                arma::cx_mat _left_term_ = cxi_*hbar_/_dt_ - _potentials_ - hbar_*hbar_/(mass_*_dx_*_dx_) - hbar_*hbar_/(mass_*_dy_*_dy_);
 
                 _new_psi_ = (_first_term_ + _second_term_ + _third_term_)/_left_term_;
-                
+
                 epsilon_ = solver::MatrixNorm(_implicite_psi_,_new_psi_);
         }
         _psi_ = _implicite_psi_;
 
 }
 
-void solver::Solver::CTCS(){
+void solver::Solver::CTCS(void){
 
-        arma::cx_mat _first_term_ = -1.0 * (hbar_*hbar_/(2*mass_*_dx_*_dx_))*_constants_*_psi_;
-        arma::cx_mat _second_term_ = -1.0 * (hbar_*hbar_/(2*mass_*_dy_*_dy_))*_psi_*_constants_;
-        arma::cx_mat _third_term_ = cxi_ * hbar_ / _dt_ * _psi_;
+        arma::cx_mat _implicite_psi_ = _psi_;
+        arma::cx_mat _new_psi_ = _psi_;
+        double epsilon_ = arma::datum::inf ;
 
-        arma::cx_mat _left_term_ = cxi_*hbar_ - _potentials_ - hbar_*hbar_/(mass_*_dx_*_dx_) - hbar_*hbar_/(mass_*_dy_*_dy_);
+        while (epsilon_ > _precision_){
 
-        arma::cx_mat _right_term_ = (_first_term_ + _second_term_ + _third_term_)/_left_term_;
-        int size_ =  _right_term_.n_rows;
-        _psi_.submat(1,1,size_,size_) = _right_term_.submat(1,1,size_,size_);
+                _implicite_psi_ = _new_psi_;
+                arma::cx_mat _first_term_ = -1.0 *hbar_*hbar_/(2*mass_*_dx_*_dx_)*(_constants_*_implicite_psi_ + _constants_*_psi_);
+                arma::cx_mat _second_term_ = -1.0 *hbar_*hbar_/(2*mass_*_dy_*_dy_)*(_implicite_psi_*_constants_ + _psi_*_constants_);
+                arma::cx_mat _third_term_ = (2.0*cxi_*hbar_/_dt_ - _potentials_ + hbar_*hbar_/(mass_*_dx_*_dx_) - hbar_*hbar_/(mass_*_dy_*_dy_))%_psi_;
+
+                arma::cx_mat _left_term_ = 2.0*cxi_*hbar_ - _potentials_ - hbar_*hbar_/(mass_*_dx_*_dx_) - hbar_*hbar_/(mass_*_dy_*_dy_);
+
+                _new_psi_ = (_first_term_ + _second_term_ + _third_term_)/_left_term_;
+
+                epsilon_ = solver::MatrixNorm(_implicite_psi_,_new_psi_);
+
+        }
+
+        _psi_ = _new_psi_ ;
 }
 
 
