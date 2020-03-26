@@ -77,6 +77,8 @@ namespace solver{
                 Solver();
                 Solver(arma::cx_mat init_psi, double dx, double dy, double dt, arma::cx_mat init_potential);
                 void FTCS(void);
+                void BTCS(void);
+                void CTCS(void);
 
         };
 unsigned int Factorial( unsigned int number );

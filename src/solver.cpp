@@ -26,21 +26,39 @@ solver::Solver::Solver(arma::cx_mat input, double dx, double dy, double dt, arma
         _potentials_.submat(1,1,n_rows_,n_cols_);
 
         _constants_ = arma::cx_mat(_psi_.n_rows, _psi_.n_cols, arma::fill::zeros);
-        arma::cx_double cte_ = cxi_*hbar_*_dt_;
 	for (arma::uword i = 0; i < _constants_.n_cols - 1; i++) {
-		_constants_(i+1, i) = cte_;
-		_constants_(i, i+1) = cte_;
+		_constants_(i+1, i) = 1;
+		_constants_(i, i+1) = 1;
 	}
 }
 
 void solver::Solver::FTCS(){
-        arma::cx_mat _first_term_ = (1/(2*mass_*_dx_*_dx_))*_constants_*_psi_;
-        arma::cx_mat _second_term_ = (1/(2*mass_*_dy_*_dy_))*_psi_*_constants_;
-        arma::cx_mat _third_term_ = (_dt_/(cxi_*hbar_))*(_potentials_+(cxi_*hbar_/_dt_)+(hbar_*hbar_/(mass_*_dx_*_dx_))+(hbar_*hbar_/(mass_*_dy_*_dy_))) % _psi_ ;
+
+        arma::cx_double cte_ = cxi_*hbar_*_dt_;
+        arma::cx_mat _first_term_ = cte_*(1/(2*mass_*_dx_*_dx_))*_constants_*_psi_;
+        arma::cx_mat _second_term_ = cte_*(1/(2*mass_*_dy_*_dy_))*_psi_*_constants_;
+        arma::cx_mat _third_term_ = cte_*(_dt_/(cxi_*hbar_))*(_potentials_+(cxi_*hbar_/_dt_)+(hbar_*hbar_/(mass_*_dx_*_dx_))+(hbar_*hbar_/(mass_*_dy_*_dy_))) % _psi_ ;
 
         arma::cx_mat _right_term_ = _first_term_ + _second_term_ + _third_term_;
         int size_ = _right_term_.n_rows - 2 ;
         _psi_.submat(1,1,size_,size_) = _right_term_.submat(1,1,size_,size_);
+}
+
+void solver::Solver::BTCS(){
+
+        arma::cx_mat _first_term_ = -1.0 * (hbar_*hbar_/(2*mass_*_dx_*_dx_))*_constants_*_psi_;
+        arma::cx_mat _second_term_ = -1.0 * (hbar_*hbar_/(2*mass_*_dy_*_dy_))*_psi_*_constants_;
+        arma::cx_mat _third_term_ = cxi_ * hbar_ / _dt_ * _psi_;
+
+        arma::cx_mat _left_term_ = cxi_*hbar_ - _potentials_ - hbar_*hbar_/(mass_*_dx_*_dx_) - hbar_*hbar_/(mass_*_dy_*_dy_);
+
+        arma::cx_mat _right_term_ = (_first_term_ + _second_term_ + _third_term_)/_left_term_;
+        int size_ =  _right_term_.n_rows;
+        _psi_.submat(1,1,size_,size_) = _right_term_.submat(1,1,size_,size_);
+}
+
+void solver::Solver::CTCS(){
+        
 
 }
 
